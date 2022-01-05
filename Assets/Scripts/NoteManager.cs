@@ -90,6 +90,21 @@ public class NoteManager : MonoBehaviour
         Prune(down_notes);
         Prune(left_notes);
         Prune(right_notes);
+
+        if (health <= 0)
+        {
+            LoseGame();
+        }
+    }
+
+    public void WinGame()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(3);
+    }
+
+    public void LoseGame()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(2);
     }
 
     public float health = 10;

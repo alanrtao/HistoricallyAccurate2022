@@ -95,5 +95,6 @@ public class Target : MonoBehaviour
 
             yield return null;
         }
+        NoteManager.Instance.WinGame();
     }
 }
