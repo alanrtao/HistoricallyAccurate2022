@@ -50,9 +50,12 @@ public class PlayerController : MonoBehaviour
     {
         
     }
+
     private void HandleMovement()
     {
         transform.position = transform.position + logged_movement;
         logged_movement = Vector3.zero;
+
+        Camera.main.transform.position = transform.position - new Vector3(0, 0, 10);
     }
 }

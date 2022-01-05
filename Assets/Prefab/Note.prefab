@@ -48,7 +48,7 @@ MonoBehaviour:
   threshold: 0.46
   appearance:
     serializedVersion: 2
-    key0: {r: 0.42981845, g: 0.4292453, b: 1, a: 0.5686275}
+    key0: {r: 0.42981845, g: 0.4292453, b: 1, a: 0}
     key1: {r: 0.7352313, g: 1, b: 0.72156864, a: 1}
     key2: {r: 1, g: 0.9334803, b: 0.3537736, a: 0}
     key3: {r: 0, g: 0, b: 0, a: 0}
