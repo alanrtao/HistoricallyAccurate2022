@@ -37,19 +37,21 @@ public class Note : MonoBehaviour
     }
     KeyCode _key;
 
-    // RectTransform r;
+    // private RectTransform r;
 
     public bool left;
 
     public float time { get { return lifetime; } }
     float lifetime = 4;
 
+    [Range(0, 1)]
+    public float threshold;
+
     SpriteRenderer img;
 
     // Start is called before the first frame update
     void Start()
     {
-        // r = transform as RectTransform;
         NoteManager.Instance.beat_change += PerBeat;
 
         UpdatePosition();
@@ -58,6 +60,9 @@ public class Note : MonoBehaviour
     public Gradient appearance;
     public Gradient damage;
 
+    public AnimationCurve eliminate;
+    bool done;
+
     // Update is called once per frame
     void Update()
     {
@@ -65,19 +70,28 @@ public class Note : MonoBehaviour
 
         if (Input.GetKeyDown(key) && lifetime >= 0 && lifetime <= 1)
         {
-            if (lifetime > .5f)
+            lifetime = -float.Epsilon;
+            if (lifetime > threshold)
             {
                 // failure
+                done = false;
             } else
             {
                 // success
+                done = true;
             }
-            Destroy(gameObject);
         }
 
         if (lifetime < 0)
         {
-            img.color = damage.Evaluate(-2 * lifetime);
+            if (!done)
+                img.color = damage.Evaluate(-2 * lifetime);
+            else
+            {
+                Color c = img.color;
+                c.a = 1 - 2 * lifetime;
+                img.color = c;
+            }
         } else
         {
             img.color = appearance.Evaluate(1 - lifetime / 4);
@@ -97,7 +111,23 @@ public class Note : MonoBehaviour
 
     private void UpdatePosition()
     {
-        transform.localPosition = new Vector3(lifetime * trans_mult.x, lifetime * trans_mult.y, 0);
+        if(lifetime > threshold)
+        {
+            transform.localPosition = new Vector3(
+                (lifetime - threshold) * trans_mult.x,
+                (lifetime - threshold) * trans_mult.y, 
+                0) + trans_mult;
+        } else
+        {
+
+            transform.localPosition = trans_mult;
+        }
+        
+        if (lifetime < 0)
+        {
+            float t = 2 * lifetime;
+            transform.localPosition += 0.1f * new Vector3(Mathf.PerlinNoise(t * 4, 0), 0, 0);
+        }
     }
 
     private void OnDestroy()
@@ -105,6 +135,6 @@ public class Note : MonoBehaviour
         NoteManager.Instance.beat_change -= PerBeat;
     }
 
-    Vector2 trans_mult = Vector2.zero;
+    Vector3 trans_mult = Vector3.zero;
 
 }
