@@ -42,7 +42,7 @@ public class Note : MonoBehaviour
     public bool left;
 
     public float time { get { return lifetime; } }
-    float lifetime = 4;
+    public float lifetime = 4;
 
     [Range(0, 1)]
     public float threshold;
@@ -54,85 +54,118 @@ public class Note : MonoBehaviour
     {
         NoteManager.Instance.beat_change += PerBeat;
 
-        UpdatePosition();
+        UpdatePosition(true);
+
+        img = GetComponent<SpriteRenderer>();
+        img.color = new Color(1, 1, 1, 0);
     }
 
     public Gradient appearance;
     public Gradient damage;
 
     public AnimationCurve eliminate;
-    bool done;
+    public bool done;
+    float done_time = 0;
+    public bool is_head = false;
 
     // Update is called once per frame
     void Update()
     {
-        if (lifetime < -0.5) Destroy(gameObject);
+        if (lifetime < -1) Destroy(gameObject);
 
-        if (Input.GetKeyDown(key) && lifetime >= 0 && lifetime <= 1)
+        if (lifetime >= -0.25 && lifetime <= 1.25f && is_head)
         {
-            lifetime = -float.Epsilon;
-            if (lifetime > threshold)
+            // clickable
+            transform.localScale = Vector3.one;
+
+            if (Input.GetKeyUp(key))
             {
-                // failure
-                done = false;
-            } else
-            {
-                // success
                 done = true;
+                CamTrack.Instance.UpdateShake(5f);
             }
+            if (lifetime < 0.0f)
+            {
+                img.color = Color.white;
+            }
+        } else
+        {
+           transform.localScale = 0.8f * Vector3.one;
         }
+
 
         if (lifetime < 0)
         {
             if (!done)
-                img.color = damage.Evaluate(-2 * lifetime);
+                img.color = damage.Evaluate(-lifetime);
             else
             {
-                Color c = img.color;
-                c.a = 1 - 2 * lifetime;
-                img.color = c;
+                img.sprite = null;
             }
         } else
         {
             img.color = appearance.Evaluate(1 - lifetime / 4);
         }
+
+        if (done)
+        {
+            Color c = img.color;
+            c.a = Mathf.Pow((1 - done_time), 3);
+            img.color = c;
+        }
+
+        UpdatePosition();
+
+        lifetime -= Time.deltaTime * NoteManager.Instance.bpm / 60f;
+        if (done) done_time += Time.deltaTime * NoteManager.Instance.bpm / 60f;
     }
 
     private void PerBeat()
     {
     }
 
-
+    // public float smoothness = 0.1f;
     private void FixedUpdate()
     {
-        UpdatePosition();
-        lifetime -= Time.deltaTime * NoteManager.Instance.bpm / 60f;
+        // UpdatePosition();
+        transform.localPosition = eq_position;
     }
 
-    private void UpdatePosition()
+    Vector3 eq_position;
+    private void UpdatePosition(bool force = false)
     {
-        if(lifetime > threshold)
+        int halt = 1;
+        if(lifetime > halt)
         {
-            transform.localPosition = new Vector3(
-                (lifetime - threshold) * trans_mult.x,
-                (lifetime - threshold) * trans_mult.y, 
+            eq_position = new Vector3(
+                (lifetime - halt) * trans_mult.x,
+                (lifetime - halt) * trans_mult.y, 
                 0) + trans_mult;
         } else
         {
 
-            transform.localPosition = trans_mult;
+            eq_position = trans_mult;
         }
         
         if (lifetime < 0)
         {
-            float t = 2 * lifetime;
-            transform.localPosition += 0.1f * new Vector3(Mathf.PerlinNoise(t * 4, 0), 0, 0);
+            float t = - lifetime;
+            eq_position += 0.1f * new Vector3(Mathf.PerlinNoise(t * 4, 0), 0, 0);
         }
+
+        if (force) { transform.localPosition = eq_position; }
     }
 
     private void OnDestroy()
     {
-        NoteManager.Instance.beat_change -= PerBeat;
+        // NoteManager.Instance.beat_change -= PerBeat;
+
+        if (!done)
+        {
+            NoteManager.Instance.health -= 1;
+        } else
+        {
+            NoteManager.Instance.health += 0.05f;
+        }
     }
 
     Vector3 trans_mult = Vector3.zero;

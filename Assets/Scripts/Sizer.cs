@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Sizer : MonoBehaviour
 {
-    public float size_delta = 0.05f;
+    public float size_delta = 0.1f;
     public float sharpness = 5;
     Vector3 init_size;
 

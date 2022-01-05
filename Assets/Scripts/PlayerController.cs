@@ -9,6 +9,9 @@ public class PlayerController : MonoBehaviour
     public static PlayerController Instance { get { return _Instance; } }
     private static PlayerController _Instance;
 
+    [Range(0, 1)]
+    public float speed;
+
     private void Awake()
     {
         _Instance = this;
@@ -21,6 +24,8 @@ public class PlayerController : MonoBehaviour
         next_step = transform.GetChild(0);
         next_step.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.1f);
     }
+
+    float step_delta = 0.2f;
 
     // Update is called once per frame
     void Update()
@@ -42,7 +47,7 @@ public class PlayerController : MonoBehaviour
             logged_movement.x = 1;
         }
 
-        next_step.localPosition = logged_movement;
+        next_step.localPosition = logged_movement * step_delta;
     }
 
     Vector3 logged_movement = Vector3.zero;
@@ -53,9 +58,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        transform.position = transform.position + logged_movement;
+        transform.position = transform.position + logged_movement * step_delta;
         logged_movement = Vector3.zero;
-
-        Camera.main.transform.position = transform.position - new Vector3(0, 0, 10);
     }
 }

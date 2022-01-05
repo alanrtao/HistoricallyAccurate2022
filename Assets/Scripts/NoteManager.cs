@@ -12,14 +12,16 @@ public class NoteManager : MonoBehaviour
 
     private float _beat_time = 0;
 
-    public float bpm = 120;
+    public float bpm0 = 120;
+    public float bpm { get { return _bpm; } }
+    float _bpm;
 
     public static NoteManager Instance { get { return _Instance; } }
     private static NoteManager _Instance;
 
     public GameObject note_prototype;
 
-    double dsp0;
+    float raw_time;
 
     public UnityEngine.UI.Slider hp_bar, beat_bar;
 
@@ -35,18 +37,18 @@ public class NoteManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        dsp0 = AudioSettings.dspTime;
+        raw_time = 0;
 
         GetComponent<AudioSource>().Play();
 
         beat_change += () =>
         {
             // add new note
-            /*if (Random.value > 0.8f)
-                MakeNote(true);*/
             if (Random.value < 0.8f && !cd)
-                MakeNote(false);
+                MakeNote();
         };
+
+        _bpm = bpm0;
     }
 
     int whole_beat = 0;
@@ -60,13 +62,11 @@ public class NoteManager : MonoBehaviour
     void Update()
     {
 
-    }
-
-    private void FixedUpdate()
-    {
-        double dsp = AudioSettings.dspTime - dsp0;
+        // double dsp = AudioSettings.dspTime - dsp0;
 
         _beat_time += Time.deltaTime / 60f * bpm;
+
+        raw_time += Time.deltaTime;
 
         if (Mathf.FloorToInt(_beat_time) > whole_beat)
         {
@@ -74,6 +74,8 @@ public class NoteManager : MonoBehaviour
         }
         whole_beat = Mathf.FloorToInt(_beat_time);
 
+        health = Mathf.Min(health, 10);
+        hp_bar.value = (health < 1 ? (health <= 0 ? 0 : 1) : health);
         beat_bar.value = _beat_time * 10 % 10;
 
         float t = _beat_time % 1;
@@ -81,16 +83,22 @@ public class NoteManager : MonoBehaviour
 
         hp_bar.transform.localScale = ui_size;
         beat_bar.transform.localScale = .8f * ui_size;
+
+        _bpm = bpm0 + whole_beat / 50 * 10;
+
+        Prune(up_notes);
+        Prune(down_notes);
+        Prune(left_notes);
+        Prune(right_notes);
     }
 
-    KeyCode[] l_keys = new KeyCode[] { 
-        KeyCode.W,
-        KeyCode.A,
-        KeyCode.S,
-        KeyCode.D
-    };
+    public float health = 10;
 
-    KeyCode[] r_keys = new KeyCode[]
+    private void FixedUpdate()
+    {
+    }
+
+    KeyCode[] keys = new KeyCode[]
     {
         KeyCode.UpArrow,
         KeyCode.DownArrow,
@@ -100,14 +108,21 @@ public class NoteManager : MonoBehaviour
 
     public Sprite[] key_sprites;
 
-    Note MakeNote(bool l)
+    Note MakeNote()
     {
-        StartCoroutine(CoolDown(0.5f));
+        StartCoroutine(CoolDown(.5f * 60f / bpm));
 
         GameObject go = GameObject.Instantiate(note_prototype, PlayerController.Instance.transform);
         Note n = go.GetComponent<Note>();
-        n.key = (l ? l_keys : r_keys)[Mathf.FloorToInt(Random.value * 4)];
-        n.left = l;
+        n.key = keys[Mathf.FloorToInt(Random.value * 4)];
+
+        switch(n.key)
+        {
+            case KeyCode.UpArrow: up_notes.Add(n); break;
+            case KeyCode.DownArrow: down_notes.Add(n); break;
+            case KeyCode.LeftArrow: left_notes.Add(n); break;
+            case KeyCode.RightArrow: right_notes.Add(n); break;
+        }
 
         return n;
     }
@@ -136,5 +151,25 @@ public class NoteManager : MonoBehaviour
         if (k == KeyCode.LeftArrow) return key_sprites[6];
         if (k == KeyCode.RightArrow) return key_sprites[7];
         return null;
+    }
+
+    List<Note> up_notes = new List<Note>();
+    List<Note> down_notes = new List<Note>();
+    List<Note> left_notes = new List<Note>();
+    List<Note> right_notes = new List<Note>();
+
+    void Prune(List<Note> ls)
+    {
+        if (ls.Count > 0)
+        {
+            if (ls[0].done || ls[0].lifetime < -0.25)
+            {
+                ls.RemoveAt(0);
+            }
+        }
+        if (ls.Count > 0)
+        {
+            ls[0].is_head = true;
+        }
     }
 }
