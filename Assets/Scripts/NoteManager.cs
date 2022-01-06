@@ -29,6 +29,8 @@ public class NoteManager : MonoBehaviour
     public float size_delta;
     public AnimationCurve size_within_beat;
 
+    public bool invincible; // for testing
+
     private void Awake()
     {
         _Instance = this;

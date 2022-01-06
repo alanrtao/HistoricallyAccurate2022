@@ -27,25 +27,71 @@ public class PlayerController : MonoBehaviour
 
     float step_delta = 0.2f;
 
+    public Animator anim;
+    public SpriteRenderer main, next;
+
     // Update is called once per frame
     void Update()
     {
         if (Input.GetKey(KeyCode.W))
         {
             logged_movement.y = 1;
+
         }
         else if (Input.GetKey(KeyCode.S))
         {
             logged_movement.y = -1;
+
         }
         if (Input.GetKey(KeyCode.A))
         {
             logged_movement.x = -1;
+
         }
         else if (Input.GetKey(KeyCode.D))
         {
             logged_movement.x = 1;
+
         }
+
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            // logged_movement.y = 1;
+
+            anim.SetBool("Up", true);
+            anim.SetBool("Down", false);
+            anim.SetBool("Left", false);
+            anim.SetBool("Right", false);
+        }
+        else if (Input.GetKey(KeyCode.DownArrow))
+        {
+            // logged_movement.y = -1;
+
+            anim.SetBool("Up", false);
+            anim.SetBool("Down", true);
+            anim.SetBool("Left", false);
+            anim.SetBool("Right", false);
+        }
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            // logged_movement.x = -1;
+
+            anim.SetBool("Up", false);
+            anim.SetBool("Down", false);
+            anim.SetBool("Left", true);
+            anim.SetBool("Right", false);
+        }
+        else if (Input.GetKey(KeyCode.RightArrow))
+        {
+            // logged_movement.x = 1;
+
+            anim.SetBool("Up", false);
+            anim.SetBool("Down", false);
+            anim.SetBool("Left", false);
+            anim.SetBool("Right", true);
+        }
+
+        next.sprite = main.sprite;
 
         next_step.localPosition = logged_movement * step_delta;
     }

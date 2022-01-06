@@ -9,6 +9,7 @@ public class Target : MonoBehaviour
     SpriteRenderer sr;
 
     public SpriteRenderer hint, pointer;
+    public Animator anim;
 
     float pointer_radius = 1.5f;
 
@@ -23,6 +24,7 @@ public class Target : MonoBehaviour
     {
         float dist = (transform.position - PlayerController.Instance.transform.position).magnitude;
 
+        anim.SetBool("Die", dead);
         if (dead)
         {
             hint.color = new Color(1, 1, 1, 0);

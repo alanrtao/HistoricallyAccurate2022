@@ -159,7 +159,7 @@ public class Note : MonoBehaviour
     {
         // NoteManager.Instance.beat_change -= PerBeat;
 
-        if (!done)
+        if (!done && !NoteManager.Instance.invincible)
         {
             NoteManager.Instance.health -= 1;
         } else

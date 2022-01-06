@@ -25,10 +25,13 @@ public class CamTrack : MonoBehaviour
 
     float ext = 0;
     // Update is called once per frame
+    Vector3 offset = new Vector3(0, 0, -10);
     void Update()
     {
         ext = 0.5f * ext;
         mcp.m_AmplitudeGain = ext;
+
+        transform.position = PlayerController.Instance.transform.position + offset;
     }
 
     public void UpdateShake(float magnitude)
