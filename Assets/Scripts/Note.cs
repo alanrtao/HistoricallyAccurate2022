@@ -68,6 +68,14 @@ public class Note : MonoBehaviour
     float done_time = 0;
     public bool is_head = false;
 
+    delegate void Slot();
+    Slot fire_at_damage = () => {
+        CamTrack.Instance.UpdateShake(15f);
+        NoteManager.Instance.health -= 1;
+    };
+    Slot fire_at_heal = () => NoteManager.Instance.health += 0.05f;
+
+
     // Update is called once per frame
     void Update()
     {
@@ -81,7 +89,7 @@ public class Note : MonoBehaviour
             if (Input.GetKeyUp(key))
             {
                 done = true;
-                CamTrack.Instance.UpdateShake(5f);
+                CamTrack.Instance.UpdateShake(2f);
             }
             if (lifetime < 0.0f)
             {
@@ -96,10 +104,22 @@ public class Note : MonoBehaviour
         if (lifetime < 0)
         {
             if (!done)
+            {
+                if (fire_at_damage != null)
+                {
+                    fire_at_damage();
+                    fire_at_damage = null;
+                }
                 img.color = damage.Evaluate(-lifetime);
+            }
             else
             {
-                img.sprite = null;
+                if (fire_at_heal != null)
+                {
+                    fire_at_heal();
+                    fire_at_heal = null;
+                }
+                // img.sprite = null;
             }
         } else
         {
@@ -161,10 +181,8 @@ public class Note : MonoBehaviour
 
         if (!done && !NoteManager.Instance.invincible)
         {
-            NoteManager.Instance.health -= 1;
         } else
         {
-            NoteManager.Instance.health += 0.05f;
         }
     }
 

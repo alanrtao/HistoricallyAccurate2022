@@ -8,10 +8,12 @@ public class Target : MonoBehaviour
 
     SpriteRenderer sr;
 
-    public SpriteRenderer hint, pointer;
+    public SpriteRenderer hint, pointer, glow;
     public Animator anim;
 
-    float pointer_radius = 1.5f;
+    public Gradient damage;
+
+    float pointer_radius = 1f;
 
     // Start is called before the first frame update
     void Start()
@@ -19,6 +21,7 @@ public class Target : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
     }
 
+    int health = 5;
     // Update is called once per frame
     void Update()
     {
@@ -29,11 +32,18 @@ public class Target : MonoBehaviour
         {
             hint.color = new Color(1, 1, 1, 0);
             return;
+        } else
+        {
+            sr.color = damage.Evaluate(health / 5f);
         }
 
-        float engage_dist = 3;
-        float succeed_dist = 1.75f;
-        if (dist > engage_dist)
+        glow.sprite = sr.sprite;
+
+        float engage_dist = 2;
+        float succeed_dist = 1f;
+        int engage_beat = 200;
+
+        if (dist > engage_dist || NoteManager.Instance.beat_time_whole < engage_beat)
         {
             hint.color = new Color(1, 1, 1, 0);
         }
@@ -51,10 +61,10 @@ public class Target : MonoBehaviour
             hint.GetComponent<Sizer>().size_delta = 0.1f * (3 * (engage_dist - dist) + 1);
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && !dead)
+        if (!dead && NoteManager.Instance.beat_time_whole >= engage_beat && Input.GetKeyDown(KeyCode.Space) && PlayerController.Instance.can_knife && dist < engage_dist)
         {
             // close enough, succeed
-            if (dist < succeed_dist)
+            if (dist < succeed_dist && health == 0)
             {
                 dead = true;
                 StartCoroutine(DeathAnimation());
@@ -62,14 +72,16 @@ public class Target : MonoBehaviour
             // too far, dodge
             else
             {
-                transform.position += (transform.position - PlayerController.Instance.transform.position).normalized * 3f;
+                health--;
+                transform.position += (transform.position - PlayerController.Instance.transform.position).normalized * 1f;
             }
+            PlayerController.Instance.PlayKnife();
         }
 
         pointer.transform.localPosition = (transform.position - PlayerController.Instance.transform.position).normalized * pointer_radius;
         pointer.transform.right = (transform.position - PlayerController.Instance.transform.position).normalized;
 
-        if (InScreen(Camera.main.WorldToViewportPoint(transform.position)))
+        if (NoteManager.Instance.beat_time_whole < engage_beat && InScreen(Camera.main.WorldToViewportPoint(transform.position)))
         {
             pointer.color = new Color(1, 1, 1, 0);
         }
@@ -81,7 +93,8 @@ public class Target : MonoBehaviour
 
     bool InScreen(Vector3 vp)
     {
-        return vp.x > 0 && vp.x < 1 && vp.y > 0 && vp.y < 1;
+        float sc_thresh = 0.35f;
+        return vp.x > sc_thresh && vp.x < 1 - sc_thresh && vp.y > sc_thresh && vp.y < 1 - sc_thresh;
     }
 
     IEnumerator DeathAnimation()

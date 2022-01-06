@@ -23,12 +23,18 @@ public class PlayerController : MonoBehaviour
         NoteManager.Instance.beat_change += HandleMovement;
         next_step = transform.GetChild(0);
         next_step.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 0.1f);
+
+        knife_delta = knife.transform.localPosition;
     }
 
     float step_delta = 0.2f;
 
-    public Animator anim;
+    public Animator anim, knife;
     public SpriteRenderer main, next;
+
+    Vector3 knife_delta;
+
+    Vector3 leftward = new Vector3(-1, 1, 1), rightward = new Vector3(1, 1, 1);
 
     // Update is called once per frame
     void Update()
@@ -80,6 +86,9 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("Down", false);
             anim.SetBool("Left", true);
             anim.SetBool("Right", false);
+
+            knife.transform.localScale = leftward;
+            knife.transform.localPosition = new Vector3(-knife_delta.x, knife_delta.y, knife_delta.z);
         }
         else if (Input.GetKey(KeyCode.RightArrow))
         {
@@ -89,6 +98,9 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("Down", false);
             anim.SetBool("Left", false);
             anim.SetBool("Right", true);
+
+            knife.transform.localScale = rightward;
+            knife.transform.localPosition = new Vector3(knife_delta.x, knife_delta.y, knife_delta.z);
         }
 
         next.sprite = main.sprite;
@@ -106,5 +118,20 @@ public class PlayerController : MonoBehaviour
     {
         transform.position = transform.position + logged_movement * step_delta;
         logged_movement = Vector3.zero;
+    }
+
+    public bool can_knife = true;
+    public void PlayKnife()
+    {
+        can_knife = false;
+        knife.gameObject.SetActive(true);
+        StartCoroutine(UnKnife());
+    }
+
+    IEnumerator UnKnife()
+    {
+        yield return new WaitForSeconds(1);
+        knife.gameObject.SetActive(false);
+        can_knife = true;
     }
 }

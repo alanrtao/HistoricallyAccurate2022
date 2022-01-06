@@ -51,6 +51,7 @@ public class NoteManager : MonoBehaviour
         };
 
         _bpm = bpm0;
+        hp_bar.maxValue = health;
     }
 
     int whole_beat = 0;
