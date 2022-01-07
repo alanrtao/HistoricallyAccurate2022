@@ -39,25 +39,28 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKey(KeyCode.W))
+        if (NoteManager.Instance.beat_time_whole >= NoteManager.Instance.engage_beat)
         {
-            logged_movement.y = 1;
+            if (Input.GetKey(KeyCode.W))
+            {
+                logged_movement.y = 1;
 
-        }
-        else if (Input.GetKey(KeyCode.S))
-        {
-            logged_movement.y = -1;
+            }
+            else if (Input.GetKey(KeyCode.S))
+            {
+                logged_movement.y = -1;
 
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            logged_movement.x = -1;
+            }
+            if (Input.GetKey(KeyCode.A))
+            {
+                logged_movement.x = -1;
 
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            logged_movement.x = 1;
+            }
+            else if (Input.GetKey(KeyCode.D))
+            {
+                logged_movement.x = 1;
 
+            }
         }
 
         if (Input.GetKey(KeyCode.UpArrow))
@@ -105,8 +108,12 @@ public class PlayerController : MonoBehaviour
 
         next.sprite = main.sprite;
 
-        next_step.localPosition = logged_movement * step_delta;
+        next_step_eq = logged_movement * step_delta;
+        float smoothness = .5f;
+        next_step.localPosition = next_step.localPosition * smoothness + next_step_eq * (1 - smoothness);
     }
+
+    Vector3 next_step_eq;
 
     Vector3 logged_movement = Vector3.zero;
     private void FixedUpdate()

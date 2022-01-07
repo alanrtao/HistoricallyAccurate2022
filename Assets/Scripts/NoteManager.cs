@@ -16,6 +16,8 @@ public class NoteManager : MonoBehaviour
     public float bpm { get { return _bpm; } }
     float _bpm;
 
+    public int engage_beat = 200;
+
     public static NoteManager Instance { get { return _Instance; } }
     private static NoteManager _Instance;
 
@@ -51,6 +53,7 @@ public class NoteManager : MonoBehaviour
         };
 
         _bpm = bpm0;
+        health = max_health;
         hp_bar.maxValue = health;
     }
 
@@ -73,13 +76,13 @@ public class NoteManager : MonoBehaviour
 
         if (Mathf.FloorToInt(_beat_time) > whole_beat)
         {
-            beat_change();
+            if (beat_change != null) beat_change();
         }
         whole_beat = Mathf.FloorToInt(_beat_time);
 
-        health = Mathf.Min(health, 10);
+        health = Mathf.Min(health, max_health);
         hp_bar.value = (health < 1 ? (health <= 0 ? 0 : 1) : health);
-        beat_bar.value = _beat_time * 10 % 10;
+        // beat_bar.value = _beat_time * 10 % 10;
 
         float t = _beat_time % 1;
         Vector3 ui_size = Vector3.one * (1 + size_delta * size_within_beat.Evaluate(t));
@@ -100,6 +103,15 @@ public class NoteManager : MonoBehaviour
         }
     }
 
+    public void PreWinGame()
+    {
+        beat_change = null;
+        foreach (Note n in FindObjectsOfType<Note>())
+        {
+            n.done = true; Destroy(n.gameObject);
+        }
+    }
+
     public void WinGame()
     {
         UnityEngine.SceneManagement.SceneManager.LoadScene(3);
@@ -110,7 +122,8 @@ public class NoteManager : MonoBehaviour
         UnityEngine.SceneManagement.SceneManager.LoadScene(2);
     }
 
-    public float health = 10;
+    public float max_health = 3;
+    public float health;
 
     private void FixedUpdate()
     {

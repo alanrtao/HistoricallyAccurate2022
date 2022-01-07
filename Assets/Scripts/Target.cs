@@ -21,13 +21,16 @@ public class Target : MonoBehaviour
         sr = GetComponent<SpriteRenderer>();
     }
 
-    int health = 5;
+    int health = 1;
     // Update is called once per frame
     void Update()
     {
         float dist = (transform.position - PlayerController.Instance.transform.position).magnitude;
 
         anim.SetBool("Die", dead);
+
+        glow.sprite = sr.sprite;
+
         if (dead)
         {
             hint.color = new Color(1, 1, 1, 0);
@@ -37,11 +40,9 @@ public class Target : MonoBehaviour
             sr.color = damage.Evaluate(health / 5f);
         }
 
-        glow.sprite = sr.sprite;
-
         float engage_dist = 2;
         float succeed_dist = 1f;
-        int engage_beat = 200;
+        int engage_beat = NoteManager.Instance.engage_beat;
 
         if (dist > engage_dist || NoteManager.Instance.beat_time_whole < engage_beat)
         {
@@ -81,7 +82,7 @@ public class Target : MonoBehaviour
         pointer.transform.localPosition = (transform.position - PlayerController.Instance.transform.position).normalized * pointer_radius;
         pointer.transform.right = (transform.position - PlayerController.Instance.transform.position).normalized;
 
-        if (NoteManager.Instance.beat_time_whole < engage_beat && InScreen(Camera.main.WorldToViewportPoint(transform.position)))
+        if (NoteManager.Instance.beat_time_whole < engage_beat || InScreen(Camera.main.WorldToViewportPoint(transform.position)))
         {
             pointer.color = new Color(1, 1, 1, 0);
         }
@@ -99,8 +100,9 @@ public class Target : MonoBehaviour
 
     IEnumerator DeathAnimation()
     {
+        NoteManager.Instance.PreWinGame();
         float t = 0;
-        while (t < 1f)
+        while (t < 5f)
         {
             t += Time.deltaTime;
 
